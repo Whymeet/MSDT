@@ -1,6 +1,7 @@
 import json
 import hashlib
 from typing import List
+from validator import *
 
 """
 В этом модуле обитают функции, необходимые для автоматизированной проверки результатов ваших трудов.
@@ -22,16 +23,38 @@ def calculate_checksum(row_numbers: List[int]) -> str:
     return hashlib.md5(json.dumps(row_numbers).encode('utf-8')).hexdigest()
 
 
-def serialize_result(variant: int, checksum: str) -> None:
-    """
-    Метод для сериализации результатов лабораторной пишите сами.
-    Вам нужно заполнить данными - номером варианта и контрольной суммой - файл, лежащий в папке с лабораторной.
-    Файл называется, очевидно, result.json.
 
-    ВНИМАНИЕ, ВАЖНО! На json натравлен github action, который проверяет корректность выполнения лабораторной.
-    Так что не перемещайте, не переименовывайте и не изменяйте его структуру, если планируете успешно сдать лабу.
-
-    :param variant: номер вашего варианта
-    :param checksum: контрольная сумма, вычисленная через calculate_checksum()
+def serialize_result(variant, checksum, result_file):
     """
-    pass
+    Записывает результаты в JSON-файл.
+
+    :param variant: Номер варианта.
+    :param checksum: Контрольная сумма.
+    :param result_file: Путь к файлу result.json.
+    """
+    result_data = {
+        "variant": variant,
+        "checksum": checksum
+    }
+    with open(result_file, 'w', encoding='utf-8') as file:
+        json.dump(result_data, file, ensure_ascii=False, indent=4)
+
+def main():
+    """
+    Основная функция выполнения валидации и записи результатов.
+    """
+    file_path = "87.csv"
+    result_file = "result.json"
+    variant = 87
+
+    # Валидация данных
+    invalid_rows = process_csv(file_path, VALIDATION_PATTERNS)
+
+    # Подсчет контрольной суммы
+    checksum = calculate_checksum(invalid_rows)
+
+    # Запись результатов
+    serialize_result(variant, checksum, result_file)
+
+if __name__ == "__main__":
+    main()
